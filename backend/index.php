@@ -38,6 +38,13 @@ $app->post('/search', function (Request $request, Response $response, $args) {
 
     $rank = new FindKeyWordInGoogle($data['keyword'], $data['website']);
     $result = $rank->runSearch();
+
+    if ($result === 'recaptcha') {
+        $payload = json_encode(["error" => ["message" => "Erro de Recaptcha"]]);
+        $response->getBody()->write($payload);
+        return $response->withStatus(401);
+    }
+
     $payload = json_encode($result);
 
     $response->getBody()->write($payload);

@@ -31,6 +31,11 @@ class FindKeyWordInGoogle
       sleep(10);
       $result = $this->getKeyWordPosition($keyword['url'], $keyword['keyword'], $this->website, $keyword['page']);
 
+      if ($result === 'recaptcha') {
+        $searchResult = 'recaptcha';
+        break;
+      }
+
       if (!empty($result)) {
         $searchResult = $result;
         break;
@@ -74,6 +79,11 @@ class FindKeyWordInGoogle
     $links = $document->getElementsByTagName('a');
     $titles = array();
     $pos = [];
+    preg_match('/g-recaptcha/i', $content, $recaptcha);
+
+    if (!empty($recaptcha)) {
+      return 'recaptcha';
+    }
 
     foreach ($links as $link) {
       $title = $link->getElementsByTagName('h3');
@@ -104,7 +114,7 @@ class FindKeyWordInGoogle
       $searchName = $this->sanitizeString($keyword);
       $contentFile = str_replace('src="/', 'src="https://www.google.com/', $content);
       $contentFile = str_replace('style="background:url(/images', 'style="background:url(https://www.google.com/images', $contentFile);
-      file_put_contents("$website/" . $searchName . ".html", $contentFile);
+      file_put_contents("reports/{$website}/" . $searchName . ".html", $contentFile);
 
       return $pos;
     }
