@@ -16,6 +16,8 @@ $app = AppFactory::create();
 
 $app->addBodyParsingMiddleware();
 
+$app->setBasePath('/backend');
+
 $app->addRoutingMiddleware();
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);

@@ -1,6 +1,5 @@
 import { Box, Button, FormControl, TextField } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
 import { useStorageContext } from "../../context/StorageContext";
 
 interface InputErrors {
@@ -10,9 +9,8 @@ interface InputErrors {
 }
 
 export const SearchFormComponent = () => {
-  const navigate = useNavigate();
   const [errors, setErrors] = useState({} as InputErrors);
-  const { data, setKeywordsState, setIsNewSearch } = useStorageContext();
+  const { setKeywordsState, setIsNewSearch } = useStorageContext();
   const client = useRef<HTMLInputElement>(null);
   const website = useRef<HTMLInputElement>(null);
   const keywords = useRef<HTMLInputElement>(null);
@@ -46,13 +44,7 @@ export const SearchFormComponent = () => {
       keywords: keywords.current?.value.split("\n"),
       keywordsRanked: [],
     });
-
-    navigate("/search");
   };
-
-  useEffect(() => {
-    if (!!data) navigate("/search");
-  }, [data]);
 
   return (
     <>

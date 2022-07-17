@@ -12,7 +12,7 @@ class FindKeyWordInGoogle
   private string $website;
   private array $pagesArrayBase;
 
-  public function __construct(string $keyword, string $website, $maxPageSearch = 5, $baseURL = 'https://www.google.com/search?q=')
+  public function __construct(string $keyword, string $website, $maxPageSearch = 3, $baseURL = 'https://www.google.com/search?q=')
   {
     $this->keyword = $keyword;
     $this->website = $website;

@@ -11,7 +11,6 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ApiService, ApiServiceFiles } from "../../services/ApiService";
 import {
   KeywordsSearchState,
@@ -23,6 +22,8 @@ import { SearchContinueDialog } from "./Dialogs/SearchContinueDialog";
 import { GenerateReportDialog } from "./Dialogs/GenerateReportDialog";
 import { ErrorDialog } from "./Dialogs/ErrorDialog";
 import Countdown from "react-countdown";
+import { AxiosError } from "axios";
+import { GoogleDialog } from "./Dialogs/GoogleErrorDialog";
 
 export const SearchStatusComponent = () => {
   const [keywordsList, setKeywordsList] = useState<
@@ -32,7 +33,7 @@ export const SearchStatusComponent = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [dialogDownload, setDialogDownload] = useState(false);
   const [dialogError, setDialogError] = useState(false);
-  const navigate = useNavigate();
+  const [googleDialogError, setGoogleDialogError] = useState(false);
   const { data, setKeywordsState, addResultToSearchStatus, isNewSearch } =
     useStorageContext();
 
@@ -42,6 +43,7 @@ export const SearchStatusComponent = () => {
       [...(data?.keywordsRanked ?? [])].length
     );
     let hasError = false;
+    let recaptchaError = false;
 
     for (let keyword of restKeywords) {
       try {
@@ -53,9 +55,28 @@ export const SearchStatusComponent = () => {
 
         addResultToSearchStatus(searchResponse.data);
       } catch (err) {
-        hasError = true;
+        if (
+          (err as AxiosError<{ error: { message: string } }>)?.response?.data
+            ?.error?.message === "Erro de Recaptcha"
+        ) {
+          recaptchaError = true;
+        } else {
+          hasError = true;
+        }
+
         break;
       }
+    }
+
+    if (recaptchaError) {
+      setGoogleDialogError(true);
+      const options = {
+        body: "Erro de recaptcha, tente novamente mais tarde.",
+        icon: "/ranchecker.png",
+      };
+
+      new Notification("Rankchecker", options);
+      return;
     }
 
     if (hasError) {
@@ -81,27 +102,37 @@ export const SearchStatusComponent = () => {
 
   const generateReport = async () => {
     if (!data) return;
-    const response = await ApiServiceFiles.post("/generate-excel", {
-      website: data.website,
-      client: data.client,
-      keywords: data.keywordsRanked,
+    const sortedResults = [...(data.keywordsRanked ?? [])].sort((a, b) => {
+      if (!a.page) return 0;
+      if (!b.page) return -1;
+      const page = a.page;
+      const page2 = b.page ?? 0;
+      return page > page2 ? 1 : page < page2 ? -1 : 0;
     });
-    const date = new Date();
+    try {
+      const response = await ApiServiceFiles.post("/generate-excel", {
+        website: data.website,
+        client: data.client,
+        keywords: sortedResults,
+      });
+      setDialogDownload(false);
+      setKeywordsState(undefined);
+      const date = new Date();
 
-    fileDownload(
-      response.data,
-      `Reporte ${data.client} - ${date.toLocaleDateString()}.xlsx`
-    );
+      fileDownload(
+        response.data,
+        `Reporte ${data.client} - ${date.toLocaleDateString()}.xlsx`
+      );
+    } catch (err) {}
   };
 
   const cancelSearch = () => {
     setShowDialog(false);
     setKeywordsState(undefined);
-    navigate("/");
   };
 
   const acceptSearch = () => {
-    if (!data?.keywords || !data.client || !data.website) return navigate("/");
+    if (!data?.keywords || !data.client || !data.website) return;
     setShowDialog(false);
     runSearch();
   };
@@ -109,14 +140,10 @@ export const SearchStatusComponent = () => {
   const cancellDownloadReport = () => {
     setDialogDownload(false);
     setKeywordsState(undefined);
-    navigate("/");
   };
 
   const downloadReport = () => {
     generateReport();
-    setDialogDownload(false);
-    setKeywordsState(undefined);
-    navigate("/");
   };
 
   const trySearch = () => {
@@ -165,7 +192,7 @@ export const SearchStatusComponent = () => {
     });
 
   useEffect(() => {
-    if (!data?.keywords || !data.client || !data.website) return navigate("/");
+    if (!data?.keywords || !data.client || !data.website) return;
     if (!isNewSearch) {
       if (data.keywords.length - (data.keywordsRanked ?? []).length === 0)
         return setDialogDownload(true);
@@ -212,6 +239,13 @@ export const SearchStatusComponent = () => {
           open={dialogError}
         />
       )}
+      {googleDialogError && (
+        <GoogleDialog
+          handleAccept={trySearch}
+          handleClose={cancelSearch}
+          open={googleDialogError}
+        ></GoogleDialog>
+      )}
       <h3>Fila de Ranqueamento</h3>
       <Box sx={{ width: "100%" }}>
         <Box
@@ -237,7 +271,7 @@ export const SearchStatusComponent = () => {
                 Date.now() +
                 ((data?.keywords ?? []).length -
                   (data?.keywordsRanked ?? []).length) *
-                  50000
+                  30000
               }
             ></Countdown>
           </Typography>
@@ -249,8 +283,8 @@ export const SearchStatusComponent = () => {
               <TableRow>
                 <TableCell></TableCell>
                 <TableCell>Palavra-chave</TableCell>
-                <TableCell>Posição</TableCell>
                 <TableCell>Página</TableCell>
+                <TableCell>Posição</TableCell>
                 <TableCell>Status</TableCell>
               </TableRow>
             </TableHead>
@@ -283,10 +317,10 @@ export const SearchStatusComponent = () => {
                         )}
                       </TableCell>
                       <TableCell>{keyword}</TableCell>
+                      <TableCell>{link === "loading" ? "-" : page}</TableCell>
                       <TableCell>
                         {link === "loading" ? "-" : position}
                       </TableCell>
-                      <TableCell>{link === "loading" ? "-" : page}</TableCell>
                       <TableCell>
                         {link === "loading"
                           ? "-"

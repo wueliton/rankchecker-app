@@ -1,16 +1,14 @@
 import { Box, Drawer, Grid, Typography } from "@mui/material";
-import { useState } from "react";
+import { useStorageContext } from "../../context/StorageContext";
 import RankCheckerIcon from "../Icons/AllIcons/RankCheckerIcon";
 import SearchIcon from "../Icons/AllIcons/SearchIcon";
 import { MenuButton } from "../MenuButton";
+import { SearchFormComponent } from "../SearchForm";
+import { SearchStatusComponent } from "../SearchStatus";
 
-type DashboardComponentProps = {
-  children: React.ReactElement;
-};
-
-export const DashboardComponent = ({ children }: DashboardComponentProps) => {
+export const DashboardComponent = () => {
+  const { data } = useStorageContext();
   const drawerWidth = 240;
-  const [drawerOpen, setDrawerOpen] = useState(true);
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -65,7 +63,7 @@ export const DashboardComponent = ({ children }: DashboardComponentProps) => {
                 borderRadius: "50%",
                 border: "1px solid #E6ECF5",
               }}
-              src="/conceito-pub.png"
+              src="./conceito-pub.png"
               title="Conceito Publicidade"
             />
           </Grid>
@@ -80,7 +78,7 @@ export const DashboardComponent = ({ children }: DashboardComponentProps) => {
             </Typography>
           </Grid>
         </Grid>
-        {children}
+        {!!data ? <SearchStatusComponent /> : <SearchFormComponent />}
       </Box>
     </Box>
   );

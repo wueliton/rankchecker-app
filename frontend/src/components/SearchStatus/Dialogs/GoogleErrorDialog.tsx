@@ -1,18 +1,27 @@
 import { Box, DialogContent, DialogTitle, Typography } from "@mui/material";
+import { useEffect } from "react";
+import Countdown from "react-countdown";
 import { DialogComponent } from "../../Dialog";
 import CancelIcon from "../../Icons/AllIcons/CancelIcon";
 
-type ErrorDialogProps = {
+type GoogleDialogProps = {
   open: boolean;
   handleClose: () => void;
   handleAccept: () => void;
 };
 
-export const ErrorDialog = ({
+export const GoogleDialog = ({
   open,
   handleAccept,
   handleClose,
-}: ErrorDialogProps) => {
+}: GoogleDialogProps) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleAccept();
+    }, 1000 * 60 * 20);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <DialogComponent
       open={open}
@@ -31,11 +40,16 @@ export const ErrorDialog = ({
           }}
         />
       </Box>
-      <DialogTitle sx={{ textAlign: "center" }}>
-        Houve um erro ao tentar Ranquear as palavras chave.
-      </DialogTitle>
+      <DialogTitle sx={{ textAlign: "center" }}>Erro de recaptcha</DialogTitle>
       <DialogContent>
-        <Typography mb={2}>Por favor, tente novamente mais tarde.</Typography>
+        <Typography mb={2}>
+          O Google bloqueou temporariamente as requisições, você pode tentar
+          novamente manualmente ou aguardar o tempo a seguir para que seja
+          realizada uma nova tentativa.
+        </Typography>
+        <Typography variant="h3" sx={{ textAlign: "center" }}>
+          <Countdown date={Date.now() + 1000 * 60 * 20}></Countdown>
+        </Typography>
       </DialogContent>
     </DialogComponent>
   );
