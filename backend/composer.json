@@ -8,6 +8,7 @@
   "require": {
     "slim/slim": "4.*",
     "slim/psr7": "^1.5",
-    "shuchkin/simplexlsxgen": "^1.2"
+    "shuchkin/simplexlsxgen": "^1.2",
+    "phpoffice/phpspreadsheet": "^1.24"
   }
 }
