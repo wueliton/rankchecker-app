@@ -23,7 +23,7 @@ class GenerateExcel
 
     $data = [
       ["Relatório {$this->client}"],
-      ['Gerado em', '', $today],
+      ["Gerado em: " . $today],
       ['', ''],
       ['', 'Palavra-chave', 'Página', 'Posição', 'Status'],
     ];
@@ -56,7 +56,6 @@ class GenerateExcel
 
     $sheet->mergeCells('A2:E2');
     $sheet->mergeCells('A3:B3');
-    $sheet->mergeCells('C3:E3');
     $sheet->getStyle('A2:E2')->getAlignment()->setHorizontal("center");
 
     $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
