@@ -25,6 +25,8 @@ class GenerateExcel
       ["Relatório {$this->client}"],
       ["Gerado em: " . $today],
       ['', ''],
+      ['ESTATÍSTICAS DAS PALAVRAS QUE SE ENCONTRAM NA 1ª PÁGINA DO GOOGLE'],
+      ['', ''],
       ['', 'Palavra-chave', 'Página', 'Posição', 'Status'],
     ];
 
@@ -32,7 +34,7 @@ class GenerateExcel
     $sheet = $spreadsheet->getActiveSheet();
     $sheet->fromArray($data, NULL, 'A2');
 
-    $cell = 6;
+    $cell = 8;
 
     $hyperlinkStyle = array(
       'font' => array(
@@ -56,6 +58,7 @@ class GenerateExcel
 
     $sheet->mergeCells('A2:E2');
     $sheet->mergeCells('A3:B3');
+    $sheet->mergeCells('A5:E5');
     $sheet->getStyle('A2:E2')->getAlignment()->setHorizontal("center");
 
     $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
