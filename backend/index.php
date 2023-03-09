@@ -66,4 +66,10 @@ $app->post('/generate-excel', function (Request $request, Response $response, $a
     return $file->generate();
 });
 
+$app->get('/check', function (Request $request, Response $response, $args) {
+    $payload = json_encode(["message" => 'Health Check: OK']);
+    $response->getBody()->write($payload);
+    return $response->withStatus(200);
+});
+
 $app->run();
