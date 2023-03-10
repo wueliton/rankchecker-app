@@ -43,8 +43,10 @@ class GenerateExcel
       )
     );
 
+    $index = 1;
+
     foreach ($this->keywords as $keyword) {
-      $sheet->setCellValue("A{$cell}", $keyword['id']);
+      $sheet->setCellValue("A{$cell}", $index);
       $sheet->setCellValue("B{$cell}", $keyword['keyword']);
       if (!empty($keyword['url'])) {
         $sheet->getCell("B{$cell}")->getHyperlink()->setUrl($keyword['url']);
@@ -54,6 +56,7 @@ class GenerateExcel
       $sheet->setCellValue("D{$cell}", $keyword['position']);
       $sheet->setCellValue("E{$cell}", is_null($keyword['position']) ? 'Não encontrado' : 'Encontrada');
       $cell = $cell + 1;
+      $index = $index + 1;
     };
 
     $sheet->mergeCells('A2:E2');
